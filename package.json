@@ -1,0 +1,16 @@
+{
+  "name": "sche",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "mogodb": "^0.0.1-security",
+    "mongoose": "^8.0.2",
+    "morgan": "~1.9.1"
+  }
+}
