@@ -1,0 +1,4 @@
+appointments:
+  replicaCount: 1
+
+appointmentsMongoUrl: mongodb://mongo/test
