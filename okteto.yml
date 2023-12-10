@@ -4,7 +4,7 @@ build:
 
 deploy:
   - helm upgrade --install appointments chart
-    --set image.repository=${OKTETO_BUILD_APPOINTMENTS_IMAGE}
+    --set appointments.image=${OKTETO_BUILD_APPOINTMENTS_IMAGE}
     --set appointmentsMongoUrl=$APPOINTMENTS_DB_URL
 
 dev:
