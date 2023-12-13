@@ -3,6 +3,8 @@ const router = express.Router();
 var Appointment = require('../models/appointment');
 var debug = require('debug')('appointments-2:server');
 
+const axios = require('axios');
+
 // Obtener todas las citas
 router.get('/', async function(req, res, next) {
   try {
@@ -54,37 +56,51 @@ router.get('/patients/:idPatient', async function(req, res, next) {
   }
 });
 
-
-// Crear nueva cita
+//Crear una nueva cita
 router.post('/', async function(req, res, next) {
-  const { nameDoctor, lastnameDoctor, idPatient, namePatient, lastnamePatient, date } = req.body;
-
-  const appointment = new Appointment({
-    nameDoctor,
-    lastnameDoctor,
-    idPatient,
-    namePatient,
-    lastnamePatient,
-    date
-  });
+  const apiUrl = 'https://scheduler-gabriellb99.cloud.okteto.net/api/v1/schedulers';
 
   try {
-    await appointment.save();
-    
-    return res.sendStatus(201);
-  } catch(e) {
+    const response = await axios.get(apiUrl);
+    const schedulerData = response.data;
 
+    console.log('Scheduler Data:', schedulerData);
+
+    const processedSchedulers = await Appointment.distinct('schedulerId');
+
+    for (const scheduler of schedulerData) {
+      const { _id, name, lastname, date } = scheduler;
+
+      if (processedSchedulers.includes(_id)) {
+        console.log(`Scheduler with ID ${_id} already processed. Skipping.`);
+        continue;
+      }
+
+      const appointment = new Appointment({
+        schedulerId: _id,
+        nameDoctor: name,
+        lastnameDoctor: lastname,
+        idPatient: req.body.idPatient,
+        namePatient: req.body.namePatient,
+        lastnamePatient: req.body.lastnamePatient,
+        date: date || new Date()
+      });
+
+      await appointment.save();
+    }
+
+    return res.sendStatus(201);
+  } catch (e) {
     if (e.errors) {
-      // Si hay errores de validación, enviar una respuesta con el código de estado 400 (Bad Request)
-      debug("Validation problem when saving appointment");
+      console.error("Validation problem when saving appointment", e);
       return res.status(400).send({ error: e.message });
     } else {
-      // Si hay otros errores, como problemas con la base de datos, enviar una respuesta con el código de estado 500 (Internal Server Error)
-      debug("DB problem", e);
+      console.error("Error creating appointments", e);
       return res.sendStatus(500);
     }
   }
 });
+
 
 
 // Eliminar una cita por su id
@@ -111,30 +127,40 @@ router.put('/:id', async function(req, res, next) {
   const updateData = req.body;
 
   try {
-    // Utilizar findByIdAndUpdate para buscar y actualizar la cita
     const result = await Appointment.findByIdAndUpdate(appointmentId, updateData, { new: true });
 
-    // Verificar si la cita existe
     if (!result) {
       return res.status(404).send("Appointment not found");
     }
 
-    // Enviar la cita actualizada como respuesta
     res.send(result.cleanup()); 
   } catch(e) {
     
     if (e.errors) {
-      // Si hay errores de validación, enviar una respuesta con el código de estado 400 (Bad Request)
       debug("Validation problem when updating appointment");
       return res.status(400).send({ error: e.message });
     } else {
-      // Si hay otros errores, como problemas con la base de datos, enviar una respuesta con el código de estado 500 (Internal Server Error)
       debug("DB problem", e);
       return res.sendStatus(500);
     }
   }
 });
 
+//Eliminar todas las citas
+router.delete('/', async (req, res) => {
+  try {
+    const result = await Appointment.deleteMany({});
+
+    if (result.deletedCount > 0) {
+      res.status(200).json({ message: 'All appointments successfully deleted' });
+    } else {
+      res.status(404).json({ error: 'No appointments found' });
+    }
+  } catch (e) {
+    debug("DB problem", e);
+    res.sendStatus(500);
+  }
+});
 
 
 module.exports = router;
