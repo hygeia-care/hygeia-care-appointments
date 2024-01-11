@@ -60,23 +60,41 @@ router.get('/patients/:idPatient', async function(req, res, next) {
 
 // Crear nueva cita
 router.post('/', async function(req, res, next) {
-  const { nameDoctor, lastnameDoctor, idPatient, namePatient, lastnamePatient, date } = req.body;
-
-  const appointment = new Appointment({
-    nameDoctor,
-    lastnameDoctor,
-    idPatient,
-    namePatient,
-    lastnamePatient,
-    date
-  });
+  const { nameDoctor, lastnameDoctor, idPatient, namePatient, lastnamePatient, date, subject } = req.body;
 
   try {
-    await appointment.save();
+    // Verificar si ya existe una cita con la misma información
+    const existingAppointment = await Appointment.findOne({
+      nameDoctor,
+      lastnameDoctor,
+      idPatient,
+      namePatient,
+      lastnamePatient,
+      date,
+      subject
+    });
+
+    if (existingAppointment) {
+      // Si ya existe una cita con la misma información, enviar una respuesta con el código de estado 409 (Conflict)
+      debug("Duplicate appointment detected");
+      return res.status(409).send({ error: "Duplicate appointment detected" });
+    }
+
+    // Si no hay citas existentes con la misma información, crear y guardar la nueva cita
+    const newAppointment = new Appointment({
+      nameDoctor,
+      lastnameDoctor,
+      idPatient,
+      namePatient,
+      lastnamePatient,
+      date,
+      subject
+    });
+
+    await newAppointment.save();
 
     return res.sendStatus(201);
   } catch(e) {
-
     if (e.errors) {
       // Si hay errores de validación, enviar una respuesta con el código de estado 400 (Bad Request)
       debug("Validation problem when saving appointment");
@@ -88,6 +106,7 @@ router.post('/', async function(req, res, next) {
     }
   }
 });
+
 
 
 

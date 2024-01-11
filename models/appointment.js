@@ -24,6 +24,10 @@ const appointmentSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true
+    },
+    subject: {
+        type: String,
+        required: true
     }
 });
 
@@ -34,7 +38,8 @@ appointmentSchema.methods.cleanup = function() {
         idPatient: this.idPatient,
         namePatient: this.namePatient,
         lastnamePatient: this.lastnamePatient,
-        date: this.date
+        date: this.date,
+        subject: this.subject
     };
 };
 
