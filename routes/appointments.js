@@ -4,6 +4,8 @@ var Appointment = require('../models/appointment');
 var debug = require('debug')('appointments-2:server');
 
 const axios = require('axios');
+const moment = require('moment');
+
 
 // Obtener todas las citas
 router.get('/', async function(req, res, next) {
@@ -56,50 +58,37 @@ router.get('/patients/:idPatient', async function(req, res, next) {
   }
 });
 
-//Crear una nueva cita
+// Crear nueva cita
 router.post('/', async function(req, res, next) {
-  const apiUrl = 'https://scheduler-gabriellb99.cloud.okteto.net/api/v1/schedulers';
+  const { nameDoctor, lastnameDoctor, idPatient, namePatient, lastnamePatient, date } = req.body;
+
+  const appointment = new Appointment({
+    nameDoctor,
+    lastnameDoctor,
+    idPatient,
+    namePatient,
+    lastnamePatient,
+    date
+  });
 
   try {
-    const response = await axios.get(apiUrl);
-    const schedulerData = response.data;
-
-    console.log('Scheduler Data:', schedulerData);
-
-    const processedSchedulers = await Appointment.distinct('schedulerId');
-
-    for (const scheduler of schedulerData) {
-      const { _id, name, lastname, date } = scheduler;
-
-      if (processedSchedulers.includes(_id)) {
-        console.log(`Scheduler with ID ${_id} already processed. Skipping.`);
-        continue;
-      }
-
-      const appointment = new Appointment({
-        schedulerId: _id,
-        nameDoctor: name,
-        lastnameDoctor: lastname,
-        idPatient: req.body.idPatient,
-        namePatient: req.body.namePatient,
-        lastnamePatient: req.body.lastnamePatient,
-        date: date || new Date()
-      });
-
-      await appointment.save();
-    }
+    await appointment.save();
 
     return res.sendStatus(201);
-  } catch (e) {
+  } catch(e) {
+
     if (e.errors) {
-      console.error("Validation problem when saving appointment", e);
+      // Si hay errores de validación, enviar una respuesta con el código de estado 400 (Bad Request)
+      debug("Validation problem when saving appointment");
       return res.status(400).send({ error: e.message });
     } else {
-      console.error("Error creating appointments", e);
+      // Si hay otros errores, como problemas con la base de datos, enviar una respuesta con el código de estado 500 (Internal Server Error)
+      debug("DB problem", e);
       return res.sendStatus(500);
     }
   }
 });
+
 
 
 
