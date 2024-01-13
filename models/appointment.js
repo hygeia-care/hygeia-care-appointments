@@ -27,7 +27,7 @@ const appointmentSchema = new mongoose.Schema({
     },
     subject: {
         type: String,
-        required: true
+        required: false
     }
 });
 

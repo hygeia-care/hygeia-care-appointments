@@ -31,7 +31,8 @@ router.get('/:id', async function(req, res, next) {
   try {
     const result = await Appointment.findById(appointmentId);
     if (!result) {
-      return res.status(404).send("Appointment not found");
+      // Si no se encuentra la cita, enviar un código de estado 404
+      return res.status(404).json({ error: "Appointment not found" });
     }
     res.send(result.cleanup());
   } catch(e) {
@@ -39,6 +40,7 @@ router.get('/:id', async function(req, res, next) {
     res.sendStatus(500);
   }
 });
+
 
 // Obtener las citas de un paciente específico por su ID
 router.get('/patients/:idPatient', async function(req, res, next) {
@@ -106,8 +108,6 @@ router.post('/', async function(req, res, next) {
     }
   }
 });
-
-
 
 
 
