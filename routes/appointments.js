@@ -129,30 +129,26 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Editar una cita según el id de la cita
-router.put('/:id', async function(req, res, next) {
-  const appointmentId = req.params.id;
-  const updateData = req.body;
+// Eliminar una cita por fecha y ID del paciente
+router.delete('/date/:date/patient/:idPatient', async (req, res) => {
+  const appointmentDate = req.params.date;
+  const patientId = req.params.idPatient;
 
   try {
-    const result = await Appointment.findByIdAndUpdate(appointmentId, updateData, { new: true });
+    const result = await Appointment.deleteOne({ date: new Date(appointmentDate), idPatient: patientId });
 
-    if (!result) {
-      return res.status(404).send("Appointment not found");
-    }
-
-    res.send(result.cleanup()); 
-  } catch(e) {
-    
-    if (e.errors) {
-      debug("Validation problem when updating appointment");
-      return res.status(400).send({ error: e.message });
+    if (result.deletedCount > 0) {
+      res.status(200).json({ message: 'Appointment successfully deleted' });
     } else {
-      debug("DB problem", e);
-      return res.sendStatus(500);
+      res.status(404).json({ error: 'Appointment not found for the given date and patient ID' });
     }
+  } catch (e) {
+    debug("DB problem", e);
+    res.sendStatus(500);
   }
 });
+
+
 
 //Eliminar todas las citas
 router.delete('/', async (req, res) => {

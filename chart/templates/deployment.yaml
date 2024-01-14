@@ -29,17 +29,17 @@ spec:
                   key: appointments_db_url
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 3335
               protocol: TCP
           readinessProbe:
             initialDelaySeconds: 10
             periodSeconds: 1
             httpGet:
               path: /
-              port: 3000
+              port: 3335
           livenessProbe:
             initialDelaySeconds: 10
             periodSeconds: 1
             httpGet:
               path: /
-              port: 3000
+              port: 3335
