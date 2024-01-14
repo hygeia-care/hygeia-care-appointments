@@ -3,8 +3,8 @@ const router = express.Router();
 var Appointment = require('../models/appointment');
 var debug = require('debug')('appointments-2:server');
 
-const axios = require('axios');
-const moment = require('moment');
+//const axios = require('axios');
+//const moment = require('moment');
 
 
 // Obtener todas las citas 
