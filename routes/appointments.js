@@ -7,7 +7,7 @@ const axios = require('axios');
 const moment = require('moment');
 
 
-// Obtener todas las citas
+// Obtener todas las citas e
 router.get('/', async function(req, res, next) {
   try {
     const result = await Appointment.find();
@@ -24,7 +24,7 @@ router.get('/', async function(req, res, next) {
 });
 
 
-// Obtener una cita específica según su ID
+// Obtener una cita específica según su ID de cita
 router.get('/:id', async function(req, res, next) {
   const appointmentId = req.params.id;
 
