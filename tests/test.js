@@ -288,5 +288,8 @@ describe("DELETE /api/v1/appointments/date/:date/patient/:idPatient", () => {
   });
 
   
-
+  afterAll(async () => {
+    // Cierra la conexión a la base de datos después de las pruebas
+    await mongoose.disconnect();
+  });
 });
