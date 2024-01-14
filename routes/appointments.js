@@ -3,7 +3,7 @@ const router = express.Router();
 var Appointment = require('../models/appointment');
 var debug = require('debug')('appointments-2:server');
 
-//const axios = require('axios');
+var axios = require('axios');
 //const moment = require('moment');
 
 
