@@ -6,7 +6,7 @@ const Appointment = require('../models/appointment.js');  // Asegúrate de impor
 
 describe("Citas API", () => {
 
-  // Limpiar la base de datos antes de ejecutar las pruebas
+  // Limpiar la base de datos de mongo antes de ejecutar las pruebas
   beforeEach(async () => {
       await Appointment.deleteMany({});
   });
