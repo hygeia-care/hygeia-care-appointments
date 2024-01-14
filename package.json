@@ -18,9 +18,9 @@
     "cors": "^2.8.5",
     "debug": "~2.6.9",
     "express": "^4.18.2",
-    "mongodb": "^4.0.0", 
     "moment": "^2.30.1",
-    "mongoose": "^5.13.0", 
+    "mongodb": "^4.0.0",
+    "mongoose": "^5.13.0",
     "morgan": "~1.9.1"
   },
   "devDependencies": {
