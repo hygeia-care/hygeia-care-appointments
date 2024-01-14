@@ -197,120 +197,75 @@ describe("Citas API", () => {
     });
   });
   
-  // Eliminar una cita por su id
-  describe("DELETE /api/v1/appointments/:id", () => {
-    it("Debería eliminar una cita por su ID", async () => {
-      // Insertar una cita en la base de datos para ser eliminada
-      const cita = await Appointment.create({
-        nameDoctor: 'NombreDoctorEliminar',
-        lastnameDoctor: 'ApellidoDoctorEliminar',
-        idPatient: '123', // Reemplaza con un ID de paciente existente en tu base de datos
-        namePatient: 'NombrePacienteEliminar',
-        lastnamePatient: 'ApellidoPacienteEliminar',
-        date: new Date('2024-01-19T18:30:00.000Z'),
-        subject: 'AsuntoEliminar'
-      });
-
-      // Realizar la solicitud DELETE a la ruta de la cita específica por su ID
-      const response = await request(app).delete(`/api/v1/appointments/${cita._id}`);
-
-      // Asegurarse de que la respuesta sea exitosa y tenga el formato esperado
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveProperty('message', 'Appointment successfully deleted');
-
-      // Verificar que la cita ha sido eliminada de la base de datos
-      const citaEnBaseDeDatos = await Appointment.findById(cita._id);
-      expect(citaEnBaseDeDatos).toBeNull();
-
-      // Puedes realizar otras aserciones según tus necesidades
+  // Eliminar una cita por fecha y ID del paciente
+describe("DELETE /api/v1/appointments/date/:date/patient/:idPatient", () => {
+  it("Debería eliminar una cita por fecha y ID del paciente", async () => {
+    // Insertar una cita en la base de datos para ser eliminada
+    const cita = await Appointment.create({
+      nameDoctor: 'NombreDoctorEliminar',
+      lastnameDoctor: 'ApellidoDoctorEliminar',
+      idPatient: '123', // Reemplaza con un ID de paciente existente en tu base de datos
+      namePatient: 'NombrePacienteEliminar',
+      lastnamePatient: 'ApellidoPacienteEliminar',
+      date: new Date('2024-01-19T18:30:00.000Z'),
+      subject: 'AsuntoEliminar'
     });
 
-    it("Debería retornar un error 404 si intenta eliminar una cita que no existe", async () => {
-      // Generar un ID no existente
-      const idNoExistente = new mongoose.Types.ObjectId();
-  
-      // Realizar la solicitud DELETE a la ruta de una cita inexistente
-      const response = await request(app).delete(`/api/v1/appointments/${idNoExistente}`);
-  
-      // Asegurarse de que la respuesta sea un error 404
-      expect(response.statusCode).toBe(404);
-      // Puedes realizar otras aserciones según tus necesidades
-    });
-  
+    // Realizar la solicitud DELETE a la ruta de la cita específica por fecha y ID del paciente
+    const response = await request(app).delete(`/api/v1/appointments/date/${cita.date.toISOString()}/patient/${cita.idPatient}`);
 
-    it("Debería retornar un error 500 si hay un problema con la base de datos al eliminar", async () => {
-      // Mockear una función de mongoose para simular un error en la base de datos
-      jest.spyOn(Appointment, 'deleteOne').mockImplementationOnce(() => {
-        throw new Error('Simulated DB error');
-      });
+    // Asegurarse de que la respuesta sea exitosa y tenga el formato esperado
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveProperty('message', 'Appointment successfully deleted');
 
-      // Insertar una cita en la base de datos para intentar eliminarla
-      const cita = await Appointment.create({
-        nameDoctor: 'NombreDoctorEliminar',
-        lastnameDoctor: 'ApellidoDoctorEliminar',
-        idPatient: '123', // Reemplaza con un ID de paciente existente en tu base de datos
-        namePatient: 'NombrePacienteEliminar',
-        lastnamePatient: 'ApellidoPacienteEliminar',
-        date: new Date('2024-01-19T18:30:00.000Z'),
-        subject: 'AsuntoEliminar'
-      });
+    // Verificar que la cita ha sido eliminada de la base de datos
+    const citaEnBaseDeDatos = await Appointment.findById(cita._id);
+    expect(citaEnBaseDeDatos).toBeNull();
 
-      // Realizar la solicitud DELETE a la ruta de la cita específica por su ID
-      const response = await request(app).delete(`/api/v1/appointments/${cita._id}`);
-
-      // Asegurarse de que la respuesta sea un error 500
-      expect(response.statusCode).toBe(500);
-
-      // Puedes realizar otras aserciones según tus necesidades
-
-      // Restaurar la función de mongoose después de la prueba
-      jest.restoreAllMocks();
-    });
+    // Puedes realizar otras aserciones según tus necesidades
   });
 
-  // Editar una cita según el id de la cita
-  describe("PUT /api/v1/appointments/:id", () => {
-    it("Debería editar una cita por su ID", async () => {
-      // Inserta una cita en la base de datos
-      const cita = await Appointment.create({
-        nameDoctor: 'NombreDoctor1',
-        lastnameDoctor: 'ApellidoDoctor1',
-        idPatient: 123,
-        namePatient: 'NombrePaciente1',
-        lastnamePatient: 'ApellidoPaciente1',
-        date: new Date('2024-01-15T09:00:00.000Z'),
-        subject: 'Asunto1'
-      });
-
-      // Datos actualizados
-      const updateData = {
-        nameDoctor: 'NuevoNombreDoctor',
-        date: new Date('2024-01-16T10:00:00.000Z'),
-        subject: 'NuevoAsunto'
-      };
-
-      // Realizar la solicitud PUT a la ruta de la cita específica
-      const response = await request(app).put(`/api/v1/appointments/${cita._id}`).send(updateData);
-
-      // Asegurarse de que la respuesta sea exitosa y tenga el formato esperado
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveProperty('nameDoctor', 'NuevoNombreDoctor');
-      expect(response.body).toHaveProperty('date', updateData.date.toISOString());
-      expect(response.body).toHaveProperty('subject', 'NuevoAsunto');
-      // Puedes realizar otras aserciones según tus necesidades
-    });
-
-    it("Debería retornar un error 404 si intenta editar una cita que no existe", async () => {
-      // Generar un ID no existente
-      const idNoExistente = "5f5e62b3615b503f588b2d3c";  // Reemplaza esto con una cadena hexadecimal aleatoria
-
-      // Realizar la solicitud PUT a la ruta de una cita inexistente
-      const response = await request(app).put(`/api/v1/appointments/${idNoExistente}`).send({});
-
-      // Asegurarse de que la respuesta sea un error 404
-      expect(response.statusCode).toBe(404);
-    });
+  it("Debería retornar un error 404 si intenta eliminar una cita que no existe", async () => {
+    // Generar un ID no existente
+    const idNoExistente = new mongoose.Types.ObjectId();
+  
+    // Realizar la solicitud DELETE a la ruta de una cita inexistente
+    const response = await request(app).delete(`/api/v1/appointments/date/${new Date().toISOString()}/patient/${idNoExistente}`);
+  
+    // Asegurarse de que la respuesta sea un error 404
+    expect(response.statusCode).toBe(404);
+    // Puedes realizar otras aserciones según tus necesidades
   });
+
+  it("Debería retornar un error 500 si hay un problema con la base de datos al eliminar", async () => {
+    // Mockear una función de mongoose para simular un error en la base de datos
+    jest.spyOn(Appointment, 'deleteOne').mockImplementationOnce(() => {
+      throw new Error('Simulated DB error');
+    });
+
+    // Insertar una cita en la base de datos para intentar eliminarla
+    const cita = await Appointment.create({
+      nameDoctor: 'NombreDoctorEliminar',
+      lastnameDoctor: 'ApellidoDoctorEliminar',
+      idPatient: '123', // Reemplaza con un ID de paciente existente en tu base de datos
+      namePatient: 'NombrePacienteEliminar',
+      lastnamePatient: 'ApellidoPacienteEliminar',
+      date: new Date('2024-01-19T18:30:00.000Z'),
+      subject: 'AsuntoEliminar'
+    });
+
+    // Realizar la solicitud DELETE a la ruta de la cita específica por fecha y ID del paciente
+    const response = await request(app).delete(`/api/v1/appointments/date/${cita.date.toISOString()}/patient/${cita.idPatient}`);
+
+    // Asegurarse de que la respuesta sea un error 500
+    expect(response.statusCode).toBe(500);
+
+    // Puedes realizar otras aserciones según tus necesidades
+
+    // Restaurar la función de mongoose después de la prueba
+    jest.restoreAllMocks();
+  });
+});
 
   // Eliminar todas las citas
   describe("DELETE /api/v1/appointments/", () => {

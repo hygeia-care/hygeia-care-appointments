@@ -110,7 +110,7 @@ router.post('/', async function(req, res, next) {
 });
 
 
-
+/*
 // Eliminar una cita por su id
 router.delete('/:id', async (req, res) => {
   const appointmentId = req.params.id;
@@ -127,7 +127,7 @@ router.delete('/:id', async (req, res) => {
     debug("DB problem", e);
     res.sendStatus(500);
   }
-});
+});*/
 
 // Eliminar una cita por fecha y ID del paciente
 router.delete('/date/:date/patient/:idPatient', async (req, res) => {
@@ -147,7 +147,6 @@ router.delete('/date/:date/patient/:idPatient', async (req, res) => {
     res.sendStatus(500);
   }
 });
-
 
 
 //Eliminar todas las citas
