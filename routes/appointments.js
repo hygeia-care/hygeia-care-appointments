@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 var Appointment = require('../models/appointment');
 var debug = require('debug')('appointments-2:server');
-
 var axios = require('axios');
 //const moment = require('moment');
+
+
 
 
 // Obtener todas las citas 
@@ -109,25 +110,6 @@ router.post('/', async function(req, res, next) {
   }
 });
 
-
-/*
-// Eliminar una cita por su id
-router.delete('/:id', async (req, res) => {
-  const appointmentId = req.params.id;
-
-  try {
-    const result = await Appointment.deleteOne({ _id: appointmentId });
-
-    if (result.deletedCount > 0) {
-      res.status(200).json({ message: 'Appointment successfully deleted' });
-    } else {
-      res.status(404).json({ error: 'Appointment not found' });
-    }
-  } catch (e) {
-    debug("DB problem", e);
-    res.sendStatus(500);
-  }
-});*/
 
 // Eliminar una cita por fecha y ID del paciente
 router.delete('/date/:date/patient/:idPatient', async (req, res) => {
