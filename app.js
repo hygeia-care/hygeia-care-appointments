@@ -23,15 +23,27 @@ app.use('/users', usersRouter);
 
 app.use('/api/v1/appointments', appointmentsRouter);
 
-//setup connection to mongo
+// setup connection to mongo
 const mongoose = require('mongoose');
-const DB_URL = (process.env.DB_URL || 'mongodb+srv://celia_Appointment:celia_Appointment@cluster0.miuwv1w.mongodb.net/appointments')
-console.log("Connection to database: %s", DB_URL)
+const DB_URL = process.env.DB_URL || 'mongodb+srv://celia_Appointment:celia_Appointment@cluster0.miuwv1w.mongodb.net/appointments';
 
-mongoose.connect(DB_URL);
+// Lógica para conectar a la base de datos
+const connectToDatabase = async () => {
+    try {
+        await mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+        console.log("Connected to the database:", DB_URL);
+    } catch (error) {
+        console.error("Error connecting to the database:", error.message);
+        // Manejar el error según tus necesidades
+    }
+};
+
+// Conectarse a la base de datos al iniciar la aplicación
+connectToDatabase();
+
 const db = mongoose.connection;
 
-//recover from errors
+// recover from errors
 db.on('error', console.error.bind(console, 'db connection error'));
 
 module.exports = app;
