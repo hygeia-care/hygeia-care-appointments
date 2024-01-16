@@ -28,6 +28,7 @@ const mongoose = require('mongoose');
 const DB_URL = (process.env.DB_URL || 'mongodb+srv://celia_Appointment:celia_Appointment@cluster0.miuwv1w.mongodb.net/appointments')
 console.log("Connection to database: %s", DB_URL)
 
+//conexión
 mongoose.connect(DB_URL);
 const db = mongoose.connection;
 
