@@ -1,6 +1,6 @@
 const Appointment = require('../../models/appointment');
 const dbConnectTest = require('./envDBIntegrationTest');
-
+//jest
 jest.setTimeout(3000);
 
 describe("Integration Tests for Appointments API", () => {
