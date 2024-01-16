@@ -1,7 +1,6 @@
 const Appointment = require('../../models/appointment');
 const dbConnectTest = require('./envDBIntegrationTest');
-const request = require('supertest');
-const app = require('../../app'); 
+
 jest.setTimeout(3000);
 
 describe("Integration Tests for Appointments API", () => {
@@ -30,26 +29,14 @@ describe("Integration Tests for Appointments API", () => {
         });
 
         it("Creates an appointment in the DB", async () => {
-            const createResponse = await request(app)
-                .post('/api/v1/appointments')
-                .send(appointmentData);
-
-            expect(createResponse.status).toBe(201);
-
-            const result = await Appointment.find();
-            expect(result).toHaveLength(1);
+            const createResponse = await Appointment.create(appointmentData);
+            expect(createResponse).toHaveProperty('_id');
         });
 
         it("Retrieves appointments for a specific patient", async () => {
-          const getResponse = await request(app)
-              .get(`/api/v1/appointments/patients/${appointmentData.idPatient}`);
-      
-          console.log("GET /api/v1/appointments/patients/:idPatient response:", getResponse.body);
-      
-          
-          expect(getResponse.status).toBe(200); 
-          expect(getResponse.body).toHaveLength(1); 
-          expect(getResponse.body[0].nameDoctor).toEqual(appointmentData.nameDoctor);
+            const getResponse = await Appointment.find({ "idPatient": appointmentData.idPatient });
+            expect(getResponse).toHaveLength(1);
+            expect(getResponse[0].nameDoctor).toEqual(appointmentData.nameDoctor);
         });
 
         it("Reads appointment from the DB", async () => {
@@ -59,18 +46,9 @@ describe("Integration Tests for Appointments API", () => {
         });
 
         it("Deletes appointment from the DB", async () => {
-            const deleteResponse = await request(app)
-                .delete(`/api/v1/appointments/date/${appointmentData.date}/patient/${appointmentData.idPatient}`);
-
-            expect(deleteResponse.status).toBe(200);
-
-            const result = await Appointment.findOne({ "nameDoctor": appointmentData.nameDoctor });
-            expect(result).toBeNull();
+            const deleteResponse = await Appointment.deleteOne({ "date": new Date(appointmentData.date), "idPatient": appointmentData.idPatient });
+            expect(deleteResponse.deletedCount).toBe(1);
         });
-
-        
-      
-      
 
         afterAll(async () => {
             await Appointment.deleteMany({});
@@ -82,5 +60,5 @@ describe("Integration Tests for Appointments API", () => {
             await dbConnectTest.close();
         }
     });
-});
 
+});

@@ -3,6 +3,7 @@ const request = require('supertest');
 const Appointment = require('../models/appointment');
 
 describe("Appointment API", () => {
+      
 
     describe("GET /appointments", () => {
 
