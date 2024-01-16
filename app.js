@@ -32,6 +32,13 @@ const connectToDatabase = async () => {
     try {
         await mongoose.connect(DB_URL, { useNewUrlParser: true, useUnifiedTopology: true });
         console.log("Connected to the database:", DB_URL);
+
+        // Desconectar la base de datos después de 10 minutos (ajusta el tiempo según tus necesidades)
+        const disconnectTimeout = 1 * 60 * 1000; // 10 minutos en milisegundos
+        setTimeout(async () => {
+            await mongoose.disconnect();
+            console.log("Disconnected from the database");
+        }, disconnectTimeout);
     } catch (error) {
         console.error("Error connecting to the database:", error.message);
         // Puedes lanzar una excepción para indicar que la conexión ha fallado
@@ -39,6 +46,7 @@ const connectToDatabase = async () => {
         // Otras opciones: cerrar la aplicación, enviar una notificación, etc.
     }
 };
+
 
 
 // Conectarse a la base de datos al iniciar la aplicación
