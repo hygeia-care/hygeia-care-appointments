@@ -4,4 +4,5 @@ module.exports = {
     '^.+\\.js$': 'babel-jest',
   },
   detectOpenHandles: false,
+  testTimeout: 3000, 
 };

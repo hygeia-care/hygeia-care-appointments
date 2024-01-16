@@ -34,9 +34,12 @@ const connectToDatabase = async () => {
         console.log("Connected to the database:", DB_URL);
     } catch (error) {
         console.error("Error connecting to the database:", error.message);
-        // Manejar el error según tus necesidades
+        // Puedes lanzar una excepción para indicar que la conexión ha fallado
+        throw new Error("Unable to connect to the database");
+        // Otras opciones: cerrar la aplicación, enviar una notificación, etc.
     }
 };
+
 
 // Conectarse a la base de datos al iniciar la aplicación
 connectToDatabase();
