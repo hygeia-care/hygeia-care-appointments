@@ -25,7 +25,7 @@ describe("Appointment API", () => {
                 date: new Date('2024-01-16T14:30:00.000Z'),
                 subject: 'Asunto2'
             }),
-            // Agrega más citas según sea necesario
+           
         ];
 
         var dbFind;
@@ -134,6 +134,66 @@ describe("Appointment API", () => {
             return request(app).delete(`/api/v1/appointments/date/${appointment.date.toISOString()}/patient/${appointment.idPatient}`).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbDeleteOne).toBeCalled();
+            });
+        });
+    });
+
+    describe("GET /appointments/patients/:idPatient", () => {
+
+        const patientId = '123';
+        const appointmentsForPatient = [
+            new Appointment({
+                nameDoctor: 'Doctor1',
+                lastnameDoctor: 'ApellidoDoctor1',
+                idPatient: patientId,
+                namePatient: 'Paciente1',
+                lastnamePatient: 'ApellidoPaciente1',
+                date: new Date('2024-01-15T09:00:00.000Z'),
+                subject: 'Asunto1'
+            }),
+            new Appointment({
+                nameDoctor: 'DoctorEliminar',
+                lastnameDoctor: 'ApellidoDoctorEliminar',
+                idPatient: patientId,
+                namePatient: 'PacienteEliminar',
+                lastnamePatient: 'ApellidoPacienteEliminar',
+                date: new Date('2024-01-19T18:30:00.000Z'),
+                subject: 'AsuntoEliminar'
+            }),
+        ];
+
+        var dbFind;
+
+        beforeEach(() => {
+            dbFind = jest.spyOn(Appointment, "find");
+        });
+
+        it("Should return appointments for a specific patient", () => {
+            dbFind.mockImplementation(async () => Promise.resolve(appointmentsForPatient));
+
+            return request(app).get(`/api/v1/appointments/patients/${patientId}`).then((response) => {
+                expect(response.statusCode).toBe(200);
+                expect(response.body).toHaveLength(appointmentsForPatient.length);
+                expect(dbFind).toBeCalled();
+            });
+        });
+
+        it("Should return 404 if no appointments found for the specified patient", () => {
+            dbFind.mockImplementation(async () => Promise.resolve([]));
+
+            return request(app).get(`/api/v1/appointments/patients/${patientId}`).then((response) => {
+                expect(response.statusCode).toBe(404);
+                expect(response.body.error).toEqual("Appointments not found for the specified patient");
+                expect(dbFind).toBeCalled();
+            });
+        });
+
+        it("Should return 500 if there is a problem when retrieving appointments", () => {
+            dbFind.mockImplementation(async () => Promise.reject("Connection failed"));
+
+            return request(app).get(`/api/v1/appointments/patients/${patientId}`).then((response) => {
+                expect(response.statusCode).toBe(500);
+                expect(dbFind).toBeCalled();
             });
         });
     });
