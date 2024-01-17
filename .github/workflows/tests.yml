@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -25,17 +26,18 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm run build --if-present
-    
+    - run: npm test
 
+  # Integration tests
   integration:
     needs: build
     runs-on: ubuntu-latest
 
     services:
       mongo:
-        image: mongo
+        image: mongosh
         options: >-
-          --health-cmd mongosh
+          --health-cmd mongo
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -50,4 +52,4 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm run build --if-present
-    - run: npm run integration --watchAll --no-cache
+    - run: npm run integration
