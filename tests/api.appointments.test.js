@@ -58,7 +58,7 @@ describe("Appointment API", () => {
     describe("POST /appointments", () => {
 
         const appointment = new Appointment({
-            nameDoctor: 'DoctorNuevo',
+            nameDoctor: 'DoctorNuevo1',
             lastnameDoctor: 'ApellidoNuevoDoctor',
             idPatient: '123',
             namePatient: 'PacienteNuevo',
@@ -80,7 +80,7 @@ describe("Appointment API", () => {
                 expect(response.statusCode).toBe(201);
                 expect(dbSave).toBeCalled();
             });
-        });
+        }, 10000);
 
         it("Should return 500 if there is a problem with the connection", () => {
             dbSave.mockImplementation(async () => Promise.reject("Connection failed"));

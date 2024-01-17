@@ -1,5 +1,7 @@
 const Appointment = require('../../models/appointment');
 const dbConnectTest = require('./envDBIntegrationTest');
+const mongoose = require('mongoose');
+
 //jest
 jest.setTimeout(3000);
 
@@ -56,9 +58,11 @@ describe("Integration Tests for Appointments API", () => {
     });
 
     afterAll(async () => {
-        if (dbConnectTest.readyState == 1) {
+        if(dbConnectTest.readyState == 1){
             await dbConnectTest.close();
         }
+        await mongoose.disconnect();
     });
+    
 
 });
