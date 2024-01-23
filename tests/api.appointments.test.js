@@ -67,7 +67,7 @@ describe("Appointment API", () => {
             subject: 'NuevoAsunto'
         });
 
-        var dbSave;
+        var dbSave, dbFindOne;
 
         beforeEach(() => {
             dbSave = jest.spyOn(Appointment.prototype, "save");
