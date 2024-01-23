@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "jest --detectOpenHandles --forceExit --watchAll --no-cache",
+    "test": "NODE_ENV=test jest  --detectOpenHandles --forceExit",
     "integration": "jest -c jest.integration.config.js --forceExit "
   },
   "dependencies": {

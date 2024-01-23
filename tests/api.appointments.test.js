@@ -71,10 +71,12 @@ describe("Appointment API", () => {
 
         beforeEach(() => {
             dbSave = jest.spyOn(Appointment.prototype, "save");
+            dbFindOne = jest.spyOn(Appointment, "findOne");
         });
 
         it("Should add a new appointment if everything is fine", () => {
             dbSave.mockImplementation(async () => Promise.resolve(true));
+            dbFindOne.mockImplementation(async () => Promise.resolve(false));
 
             return request(app).post("/api/v1/appointments").send(appointment).then((response) => {
                 expect(response.statusCode).toBe(201);
@@ -84,6 +86,7 @@ describe("Appointment API", () => {
 
         it("Should return 500 if there is a problem with the connection", () => {
             dbSave.mockImplementation(async () => Promise.reject("Connection failed"));
+            dbFindOne.mockImplementation(async () => Promise.resolve(false));
 
             return request(app).post("/api/v1/appointments").send(appointment).then((response) => {
                 expect(response.statusCode).toBe(500);

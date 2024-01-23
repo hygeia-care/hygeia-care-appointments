@@ -8,9 +8,20 @@ jest.setTimeout(3000);
 describe("Integration Tests for Appointments API", () => {
 
     beforeAll((done) => {
+        
         if (dbConnectTest.readyState == 1) {
+
             done();
+            /*
+            dbConnectTest.close(() => {
+                // Una vez cerrada, establece una nueva conexión
+                dbConnectTest.once("connected", () => done());
+                dbConnectTest.connect(process.env.DB_URL_TEST);
+            });*/
+
+           
         } else {
+            
             dbConnectTest.on("connected", () => done());
         }
     });

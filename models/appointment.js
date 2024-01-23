@@ -46,3 +46,4 @@ appointmentSchema.methods.cleanup = function() {
 const Appointment = mongoose.model('Appointment', appointmentSchema);
 
 module.exports = Appointment;
+

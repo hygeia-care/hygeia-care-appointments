@@ -110,6 +110,36 @@ router.post('/', async function(req, res, next) {
   }
 });
 
+// Actualizar una cita específica por su ID
+router.put('/:id', async function(req, res) {
+  const appointmentId = req.params.id;
+  const updateData = req.body;
+
+  try {
+    // Buscar la cita por ID y actualizarla
+    const updatedAppointment = await Appointment.findByIdAndUpdate(appointmentId, updateData, { new: true });
+
+    if (!updatedAppointment) {
+      // Si no se encuentra la cita, enviar un código de estado 404
+      return res.status(404).json({ error: "Appointment not found" });
+    }
+
+    // Enviar la cita actualizada
+    res.status(200).json(updatedAppointment);
+  } catch (e) {
+    if (e.errors) {
+      // Si hay errores de validación, enviar una respuesta con el código de estado 400 (Bad Request)
+      debug("Validation problem when updating appointment");
+      return res.status(400).send({ error: e.message });
+    } else {
+      // Si hay otros errores, como problemas con la base de datos, enviar una respuesta con el código de estado 500 (Internal Server Error)
+      debug("DB problem", e);
+      return res.sendStatus(500);
+    }
+  }
+});
+
+
 
 // Eliminar una cita por fecha y ID del paciente
 router.delete('/date/:date/patient/:idPatient', async (req, res) => {
