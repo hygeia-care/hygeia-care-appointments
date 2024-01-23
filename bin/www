@@ -22,6 +22,12 @@ console.log("Connection to database: %s", DB_URL)
 
 //conexión conexión
 mongoose.connect(DB_URL);
+
+mongoose.connect(DB_URL, {
+  useNewUrlParser: true, // Usa el nuevo analizador de URL
+  useUnifiedTopology: true // Usa el nuevo motor de descubrimiento y monitoreo de servidores
+});
+
 const db = mongoose.connection;
 
 //recover from errors
