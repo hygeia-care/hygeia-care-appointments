@@ -4,9 +4,33 @@ var Appointment = require('../models/appointment');
 var debug = require('debug')('appointments-2:server');
 var axios = require('axios');
 //const moment = require('moment');
+const { getScheduler } = require('../services/schedulerService');
+var verifyJWTToken = require('../verifyJWTToken');
 
 
+// Obtener una cita específica según su ID de cita
+router.get('/:id', async function(req, res, next) {
+  const appointmentId = req.params.id;
 
+  try {
+    await verifyJWTToken.verifyToken(req, res, next);
+  } catch (e){
+    console.error(e);
+    return true;
+  }
+
+  try {
+    const result = await Appointment.findById(appointmentId);
+    if (!result) {
+      // Si no se encuentra la cita, enviar un código de estado 404
+      return res.status(404).json({ error: "Appointment not found" });
+    }
+    res.send(result.cleanup());
+  } catch(e) {
+    debug("DB problem", e);
+    res.sendStatus(500);
+  }
+});
 
 // Obtener todas las citas 
 router.get('/', async function(req, res, next) {
@@ -23,25 +47,6 @@ router.get('/', async function(req, res, next) {
     res.sendStatus(500);
   }
 });
-
-
-// Obtener una cita específica según su ID de cita
-router.get('/:id', async function(req, res, next) {
-  const appointmentId = req.params.id;
-
-  try {
-    const result = await Appointment.findById(appointmentId);
-    if (!result) {
-      // Si no se encuentra la cita, enviar un código de estado 404
-      return res.status(404).json({ error: "Appointment not found" });
-    }
-    res.send(result.cleanup());
-  } catch(e) {
-    debug("DB problem", e);
-    res.sendStatus(500);
-  }
-});
-
 
 // Obtener las citas de un paciente específico por su ID
 router.get('/patients/:idPatient', async function(req, res, next) {
@@ -110,31 +115,42 @@ router.post('/', async function(req, res, next) {
   }
 });
 
-// Actualizar una cita específica por su ID
 router.put('/:id', async function(req, res) {
   const appointmentId = req.params.id;
-  const updateData = req.body;
+  const { nameDoctor, lastnameDoctor, date } = req.body; 
 
   try {
-    // Buscar la cita por ID y actualizarla
-    const updatedAppointment = await Appointment.findByIdAndUpdate(appointmentId, updateData, { new: true });
+    await verifyJWTToken.verifyToken(req, res, next);
+
+    // Obtén las schedulers del servicio Scheduler
+    const schedulers = await getScheduler();
+
+    // Comprueba si el doctor está disponible en la fecha dada
+    const isDoctorAvailable = schedulers.some(scheduler => 
+      scheduler.name === nameDoctor &&
+      scheduler.lastname === lastnameDoctor &&
+      new Date(scheduler.date).getTime() === new Date(date).getTime());
+
+    if (!isDoctorAvailable) {
+      return res.status(400).json({ error: "Doctor is not available at the specified time" });
+    }
+
+    // Si el doctor está disponible, procede con la actualización
+    const updatedAppointment = await Appointment.findByIdAndUpdate(appointmentId, req.body, { new: true });
 
     if (!updatedAppointment) {
-      // Si no se encuentra la cita, enviar un código de estado 404
       return res.status(404).json({ error: "Appointment not found" });
     }
 
-    // Enviar la cita actualizada
     res.status(200).json(updatedAppointment);
   } catch (e) {
+    console.error(e);
     if (e.errors) {
-      // Si hay errores de validación, enviar una respuesta con el código de estado 400 (Bad Request)
       debug("Validation problem when updating appointment");
-      return res.status(400).send({ error: e.message });
+      res.status(400).send({ error: e.message });
     } else {
-      // Si hay otros errores, como problemas con la base de datos, enviar una respuesta con el código de estado 500 (Internal Server Error)
       debug("DB problem", e);
-      return res.sendStatus(500);
+      res.sendStatus(500);
     }
   }
 });
