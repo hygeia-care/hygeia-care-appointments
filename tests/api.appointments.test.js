@@ -71,6 +71,7 @@ describe("Appointment API", () => {
 
         beforeEach(() => {
             dbSave = jest.spyOn(Appointment.prototype, "save");
+            //Hay que mockear tambien esto
             dbFindOne = jest.spyOn(Appointment, "findOne");
         });
 
