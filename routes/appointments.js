@@ -48,6 +48,65 @@ router.get('/', async function(req, res, next) {
   }
 });
 
+// Crear cita llamando a scheduler
+router.post('/create', async function(req, res, next) {
+  const { nameDoctor, lastnameDoctor, idPatient, namePatient, lastnamePatient, date, subject } = req.body;
+
+  try {
+    // Obtiene todas las schedulers del servicio Scheduler
+    const schedulers = await getScheduler();
+
+    // Comprueba si hay una scheduler que coincida con el nombre del doctor y la fecha
+    const isDoctorAvailable = schedulers.some(scheduler => 
+      scheduler.name === nameDoctor &&
+      scheduler.lastname === lastnameDoctor &&
+      new Date(scheduler.date).getTime() === new Date(date).getTime());
+
+    if (!isDoctorAvailable) {
+      return res.status(400).json({ error: "Doctor is not available at the specified time" });
+    }
+
+    // Verificar si ya existe una cita con la misma información
+    const existingAppointment = await Appointment.findOne({
+      nameDoctor,
+      lastnameDoctor,
+      idPatient,
+      namePatient,
+      lastnamePatient,
+      date,
+      subject
+    });
+
+    if (existingAppointment) {
+      debug("Duplicate appointment detected");
+      return res.status(409).send({ error: "Duplicate appointment detected" });
+    }
+
+    // Crear y guardar la nueva cita
+    const newAppointment = new Appointment({
+      nameDoctor,
+      lastnameDoctor,
+      idPatient,
+      namePatient,
+      lastnamePatient,
+      date,
+      subject
+    });
+
+    await newAppointment.save();
+    res.sendStatus(201);
+  } catch(e) {
+    console.error(e);
+    if (e.errors) {
+      debug("Validation problem when saving appointment");
+      res.status(400).send({ error: e.message });
+    } else {
+      debug("DB problem", e);
+      res.sendStatus(500);
+    }
+  }
+});
+
 // Obtener las citas de un paciente específico por su ID
 router.get('/patients/:idPatient', async function(req, res, next) {
   const patientId = req.params.idPatient;
@@ -61,6 +120,66 @@ router.get('/patients/:idPatient', async function(req, res, next) {
       res.status(404).json({ error: 'Appointments not found for the specified patient' });
     }
   } catch(e) {
+    debug("DB problem", e);
+    res.sendStatus(500);
+  }
+});
+
+
+router.put('/:id', async function(req, res) {
+  const appointmentId = req.params.id;
+  const { nameDoctor, lastnameDoctor, date } = req.body; 
+
+  try {
+    await verifyJWTToken.verifyToken(req, res, next);
+
+    // Obtén las schedulers del servicio Scheduler
+    const schedulers = await getScheduler();
+
+    // Comprueba si el doctor está disponible en la fecha dada
+    const isDoctorAvailable = schedulers.some(scheduler => 
+      scheduler.name === nameDoctor &&
+      scheduler.lastname === lastnameDoctor &&
+      new Date(scheduler.date).getTime() === new Date(date).getTime());
+
+    if (!isDoctorAvailable) {
+      return res.status(400).json({ error: "Doctor is not available at the specified time" });
+    }
+
+    // Si el doctor está disponible, procede con la actualización
+    const updatedAppointment = await Appointment.findByIdAndUpdate(appointmentId, req.body, { new: true });
+
+    if (!updatedAppointment) {
+      return res.status(404).json({ error: "Appointment not found" });
+    }
+
+    res.status(200).json(updatedAppointment);
+  } catch (e) {
+    console.error(e);
+    if (e.errors) {
+      debug("Validation problem when updating appointment");
+      res.status(400).send({ error: e.message });
+    } else {
+      debug("DB problem", e);
+      res.sendStatus(500);
+    }
+  }
+});
+
+// Eliminar una cita por fecha y ID del paciente
+router.delete('/date/:date/patient/:idPatient', async (req, res) => {
+  const appointmentDate = req.params.date;
+  const patientId = req.params.idPatient;
+
+  try {
+    const result = await Appointment.deleteOne({ date: new Date(appointmentDate), idPatient: patientId });
+
+    if (result.deletedCount > 0) {
+      res.status(200).json({ message: 'Appointment successfully deleted' });
+    } else {
+      res.status(404).json({ error: 'Appointment not found for the given date and patient ID' });
+    }
+  } catch (e) {
     debug("DB problem", e);
     res.sendStatus(500);
   }
@@ -114,69 +233,6 @@ router.post('/', async function(req, res, next) {
     }
   }
 });
-
-router.put('/:id', async function(req, res) {
-  const appointmentId = req.params.id;
-  const { nameDoctor, lastnameDoctor, date } = req.body; 
-
-  try {
-    await verifyJWTToken.verifyToken(req, res, next);
-
-    // Obtén las schedulers del servicio Scheduler
-    const schedulers = await getScheduler();
-
-    // Comprueba si el doctor está disponible en la fecha dada
-    const isDoctorAvailable = schedulers.some(scheduler => 
-      scheduler.name === nameDoctor &&
-      scheduler.lastname === lastnameDoctor &&
-      new Date(scheduler.date).getTime() === new Date(date).getTime());
-
-    if (!isDoctorAvailable) {
-      return res.status(400).json({ error: "Doctor is not available at the specified time" });
-    }
-
-    // Si el doctor está disponible, procede con la actualización
-    const updatedAppointment = await Appointment.findByIdAndUpdate(appointmentId, req.body, { new: true });
-
-    if (!updatedAppointment) {
-      return res.status(404).json({ error: "Appointment not found" });
-    }
-
-    res.status(200).json(updatedAppointment);
-  } catch (e) {
-    console.error(e);
-    if (e.errors) {
-      debug("Validation problem when updating appointment");
-      res.status(400).send({ error: e.message });
-    } else {
-      debug("DB problem", e);
-      res.sendStatus(500);
-    }
-  }
-});
-
-
-
-// Eliminar una cita por fecha y ID del paciente
-router.delete('/date/:date/patient/:idPatient', async (req, res) => {
-  const appointmentDate = req.params.date;
-  const patientId = req.params.idPatient;
-
-  try {
-    const result = await Appointment.deleteOne({ date: new Date(appointmentDate), idPatient: patientId });
-
-    if (result.deletedCount > 0) {
-      res.status(200).json({ message: 'Appointment successfully deleted' });
-    } else {
-      res.status(404).json({ error: 'Appointment not found for the given date and patient ID' });
-    }
-  } catch (e) {
-    debug("DB problem", e);
-    res.sendStatus(500);
-  }
-});
-
-
 //Eliminar todas las citas
 router.delete('/', async (req, res) => {
   try {
