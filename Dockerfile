@@ -13,6 +13,8 @@ COPY routes/ ./routes
 COPY models/ ./models
 COPY tests/ ./tests
 COPY app.js .
+COPY verifyJWTToken.js .
+COPY services/ ./services
 
 EXPOSE 3335
 
